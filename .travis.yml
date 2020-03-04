@@ -1,5 +1,17 @@
 language: java
 jdk: openjdk11
+addons:
+  sonarcloud:
+    organization: "6a6d74"
+    token:
+      secure: "YjC8kzVQ22ERZtcw1bUmvkuTwY2fAtAB28S3SkcuiHu0vnrP6peKm66nc2zNH4A6FO5xXnRIWlijLdu
+      TMvNLqteRY6Py6BhL2EHmdn2J78JvayGg0cnu29SnKZaamDWDXLEUqh0162x3/JsL/yDTXi0adRveCSi98YZTXcVEV
+      2lLd/kOgnabuJAkSTXZJlRVGif5uWjwKlvTfSsUw23+M6ol6qpTfkwiaUKzG0ANJHbu1F/L/bptZIulKX8rU/pus0I
+      M34ZVirmOG+tcSNVo/v/1L2whamqLg1HEcmcEnEuhr+PPhwVIeRv9xqb01eL0DSrDiCUkrFDwoNcmpGIsAG1KPuXCp
+      QYcZkrV1NL+92/E7SjHN2NNf8PoK/4u5/i/7bBypMvbH4YsiRnaLuOms4HVdKRVH1a8BOaoWnvrRcXV+jlfLcKbcUn
+      rQBG+fbmN1nERW98rDtP3uGXn2PfU1AOi//t0vcfNKZxoHBMa36mftIYGeYhQEIkaEtvygTJ95HEKK/xMF2nTZtdVq
+      XZy2kWh9eBHIuHRDccz0RNR0mp+eaCUt5RoIWjAbq+FtOmLgNshc9TgGKhKTK33eptTP80oLN19oI1LySydZjzcr2T
+      75phvFT2CxXQy2MDi5i8ywpUkLjWV0ZZYSUo6BHvdicIADyvibdZ7z8XLf7J3iT8="
 before_install:
 - openssl aes-256-cbc -K $encrypted_f9237d62903d_key -iv $encrypted_f9237d62903d_iv
   -in jeremy.enc -out jeremy -d
@@ -9,7 +21,7 @@ before_install:
 - ssh-add jeremy
 - echo -e "Host ${DEPLOY_HOST}\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 script:
-- "./mvnw clean install"
+- "./mvnw clean install sonar:sonar -Dsonar.projectKey=6a6d74_OpenWIS_Training"
 notifications:
   email:
     recipients:

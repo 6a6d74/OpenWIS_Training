@@ -4,3 +4,9 @@ before_install:
   - chmod +x mvnw
 script:
   - ./mvnw clean install
+notifications:
+  email:
+    recipients:
+      - <email_address>
+    on_success: always
+    on_failure: always

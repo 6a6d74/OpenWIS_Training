@@ -1,12 +1,35 @@
 language: java
 jdk: openjdk11
 before_install:
-  - chmod +x mvnw
+- openssl aes-256-cbc -K $encrypted_f9237d62903d_key -iv $encrypted_f9237d62903d_iv
+  -in jeremy.enc -out jeremy -d
+- chmod +x mvnw
+- eval "$(ssh-agent -s)"
+- chmod 600 jeremy
+- ssh-add jeremy
+- echo -e "Host ${DEPLOY_HOST}\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 script:
-  - ./mvnw clean install
+- "./mvnw clean install"
 notifications:
   email:
     recipients:
-      - <email_address>
+    - "<email_address>"
     on_success: always
     on_failure: always
+deploy:
+- provider: script
+  skip-cleanup: true
+  script: rsync -r --quiet --delete-after ${TRAVIS_BUILD_DIR}/target/cicd-example-*.jar
+    ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_DIRECTORY}
+  on:
+    branch: master
+- provider: script
+  skip-cleanup: true
+  script: sh ${TRAVIS_BUILD_DIR}/remote_deploy.sh
+  on:
+    branch: master
+env:
+  global:
+  - secure: Y4o+Z/ylQ3GMaGP3MSjXrDkHbe+26BKN/iyP0fd0BikbbML9zK/Smto2BKGmtkSuFmubNTVHGAkbBYCcVPONP6IZOyfRYMc1V4oLBa0YjKIPNbyNzlut11c7PGZ3rEqi0VTZEgTPgBnyUCEZIcyMIMa66EqtNvq2AAGiOAplGm4MIk32+iriDuMsNn/WybJOAExk5oM0B0sL1hiR/olh00H+UHvYdULAMYkRCmSovqqCVb7saP+1p7jYT3c7xYHcPxoTae7Fq7S8kzjA6JPtnVfQ4RxWdiIEjncjm/s+yvI4P/it8ZFjowiQ4EgcpKa+s45928XT72w+OdoF76aqCh9Uh32a9jE/reZcnCL954h0s2OSXS9IOhZzfF8qcTR+/YW2ZGdTZoeqorsvKitYfIlEKJjCA7K4feKqClrvckBzfuRWg8/7FIgyT27De2B3746gl4KuH5sXEEgOL1ioRc4EVv5jTWmXLNl9GjYhP+hhFu3s951ulO7cKhBX2PYbBUm7A68LJlDam9ivB3ACn88EiDj5lBNOOFIQNp4v6HjStb6cJ/TzCiHnrs0yppOhZgF3PJzjIVlNcrWxWTvYwHHpeOIZSwmVO1lg2OuK0hsYPxrQOU5ZpfbvlN3epZD8xUJ9RxSS+GjwhRUe+kRW1Pt0uCELOV3tsRn+N1i3gxI=
+  - secure: OaWS8bjI3c2yCLMMDDB4vdhsL3WxdZI99ichrdpYrlLVj8ATDGME7wXV63Do8imKBZh0JbZbyMntM2LDmHiXjWFZOGeilI5TRhSVclaJrcGKOxLPr5NVn+qu4d3ijn8/DFTtW1BuyePQ2lhIaN3ampSuVEP87MJXg8ZAVChkf+Ju5fNhf9nOzqmlRBfDDvMMh6AzVJS5YN7jTDwgDgxHPSTowXdOLC1LqjgJ0NbDKaZPw1g7c5Zl8u2ggkJROb/eZSikpy1o1W7m1Za3lXfh1TJ+dV0AiD9h3UgYcC7QN15cyIz8h524jKxjvBX2k3+xGYxHJycsNlx3oOTtgRSxq0/dbRMsl/UDeuvV94MX0sqSZ2ufr7dPga/tMMdqqyitUNSGSZEfi6uzBR8z4w2Lj+7TgetaxDsh1PFI09PlHOzEZx9S529ZqHwgUcx5/LcszHW4JJ6Cy+ohh3vnczAyhjj4LT5T3/sGDtXjd5TLP6ufUqWgkNudiYifFItpfONNb/mKGyN4nDDdZCK9bOpusv6j+nFIT6VjBdA6Ay4+hrBbVwoDXNBcuD3jPAgTQmum6UcZWKYlEQznvcuImGcfH5PSlVyM+adIYO8abFrD48sgrvDbwLClM0a2abgRtz9AsCM4hX1fcUbJtE0KSDnCOthZJ6Q3fPUKsZkN69sqbP8=
+  - secure: M2c3y9Mk2zKzOyIudfsREv4GT2Art4WChPej+0ZJcIkjyFOYonpW4ZEfkp8M3tvwpAdJWw9SjIhrClXLpgO5kLOE8HflkIOLSct9mZUfYktvL8SH80PRqSCIwyD4dmf8DAM+oJaCRB6BSxD1CJLuEQyMiLKEnvmNprdgi23h6jkzq9Z6GK5RBzf5nh5vDKODUXClF8dLYOBFoY9Pj12JIFj0S7s61V8ZZoK9Izb81MUPI948rzo7q3tWuQ3gQwuKNz4PnsSLBnPygardPvd3+YB1TKIyK9Ouw9WhrC4T+rDLjTzqaOes30Tm2m14BQ9vjstkSTxVZabb81lKfjqtONBewjPbw8Sr+JDoDvosRD9XLFnXSwd+i0vqVtnjBIc3kNNBX38qcClmi5N/GdpYWJlHKLC5tW+7wbJSv9jZtio3nRNu4JvPQpxC4NLN1SMW3MNJ2r1P1BCZwUjPa70tL2wG6jZaOE1AUTH4b/o83FPCpTpioHw4Fzz1a515i4vE2uRy1X9h6X6LFfAc8BFXBSeWAFxGUrp9G8nVrfCXTSxEG8soruzJF+spFyHHH7YmBqztP4/8inLpMMsk8HHz8s4VgsYUQbygp5aRb4fMPEQ9yfYzmvREO5gM6e2CZNKr8K/EyjLk4NBUlZC6usxT65LTCffqpH/2ADO/OeVN0jQ=
